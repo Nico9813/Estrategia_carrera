@@ -6,14 +6,14 @@ export const Styles = StyleSheet.create({
         backgroundColor: 'black',
     },
     carta: {
-        margin:20,
+        margin:10,
         padding: 5,
         borderColor: 'black',
         borderRadius: 10,
         backgroundColor: '#262626',
     },
     cartaContenido: {
-        padding: 15,
+        padding: 5,
         backgroundColor: '#262626',
         borderRadius: 10
     },
@@ -22,8 +22,8 @@ export const Styles = StyleSheet.create({
         backgroundColor: 'black',
     },
     boton:{
-        padding: 20,
-        margin:20,
+        padding: 10,
+        margin:10,
         borderRadius:5,
         backgroundColor: 'violet'
     },

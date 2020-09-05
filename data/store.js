@@ -17,11 +17,11 @@ let materiasIniciales = k08_sistemas.materias.map( materia => {
 const persistConfig = {
     key: 'root',
     storage: AsyncStorage,
-    whitelist: ['materias'],
+    whitelist: ['plan','materias'],
     stateReconciler: autoMergeLevel2
 };
 
 const pReducer = persistReducer(persistConfig, rootReducer);
 
-export const store = createStore(pReducer, { materias: materiasIniciales });
+export const store = createStore(pReducer, { plan: k08_sistemas.nombre, materias: materiasIniciales });
 export const persistor = persistStore(store);

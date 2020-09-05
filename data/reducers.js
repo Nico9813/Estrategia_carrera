@@ -16,6 +16,7 @@ const materiasReducer = (materias = [], accion) => {
 }
 
 let rootReducer = combineReducers({
+    plan : (plan = '', _) => plan,
     materias: materiasReducer,
 })
 

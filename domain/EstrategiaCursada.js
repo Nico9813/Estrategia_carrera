@@ -77,7 +77,7 @@ export default class EstrategiaCursada{
 
         let reducer = (acc, el) => Math.max(this.cuatrimestreMateria(el), acc)
 
-        let cuatri_minimo = materia.id_correlativas_cursar.filter(id => !this.materiasCursadas[id]).reduce(reducer, -1);
+        let cuatri_minimo = 1 + materia.id_correlativas_cursar.filter(id => !this.materiasCursadas[id]).reduce(reducer, -1);
 
         let anio_disponible = Math.trunc((cuatri_minimo + 2) / 2)
 
@@ -100,7 +100,7 @@ export default class EstrategiaCursada{
     agregarMateriaCuatrimestral(materia){
         let reducer = (acc, el) => Math.max(this.cuatrimestreMateria(el), acc)
 
-        let cuatri_minimo = materia.id_correlativas_cursar.filter(id => !this.materiasCursadas[id]).reduce(reducer, -1);
+        let cuatri_minimo = 1 + materia.id_correlativas_cursar.filter(id => !this.materiasCursadas[id]).reduce(reducer, -1);
 
         let anio_disponible = Math.trunc((cuatri_minimo + 1) / 2)
 

@@ -5,10 +5,11 @@ export const MATERIA_FINAL = "Finalizar carrera"
 
 export default class Plan{
     nombre
-    materias = []
+    materias
 
-    constructor(){
-        
+    constructor(nombre){
+        this.nombre = nombre
+        this.materias = []
     }
 
     agregar_materia(materia){
