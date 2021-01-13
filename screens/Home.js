@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { View } from 'react-native';
-import { Tabs, Tab} from 'native-base'
+import { Text } from 'react-native';
+import { Tabs, Tab, TabHeading} from 'native-base'
 
 import { Styles } from '../styles/styles';
 import Generador from './Generador';
@@ -14,16 +14,17 @@ class Home extends React.Component {
 
     render() {
         return (
-            <View style={Styles.container}>
-                <Tabs prerenderingSiblingsNumber={5} tabBarPosition="bottom" tabContainerStyle={{backgroundColor: 'black'}}>
-                    <Tab heading={"Perfil"} style={Styles.container}>
+            <Tabs tabBarBackgroundColor="white" prerenderingSiblingsNumber={5} tabBarPosition="bottom">
+                <Tab 
+                    heading={<TabHeading style={{ backgroundColor: 'red' }}>
+                        <Text style={{ color: "white" }}>Perfil</Text></TabHeading>}>
                         <Perfil></Perfil>
-                    </Tab>
-                    <Tab heading={"Generador"} style={Styles.container}>
-                        <Generador navigation={this.props.navigation}></Generador>
-                    </Tab>
+                </Tab>
+                <Tab 
+                    heading={<TabHeading style={{ backgroundColor: 'red' }}><Text style={{color:"white"}}>Generar plan</Text></TabHeading>}> 
+                    <Generador navigation={this.props.navigation}></Generador>
+                </Tab>
                 </Tabs>
-            </View>
         );
     }
 
