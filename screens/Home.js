@@ -5,6 +5,7 @@ import { Tabs, Tab, TabHeading} from 'native-base'
 import { Styles } from '../styles/styles';
 import Generador from './Generador';
 import Perfil from './Perfil';
+import PlanesGuardados from './PlanesGuardados';
 
 class Home extends React.Component {
 
@@ -23,6 +24,10 @@ class Home extends React.Component {
                 <Tab 
                     heading={<TabHeading style={{ backgroundColor: 'red' }}><Text style={{color:"white"}}>Generar plan</Text></TabHeading>}> 
                     <Generador navigation={this.props.navigation}></Generador>
+                </Tab>
+                <Tab 
+                    heading={<TabHeading style={{ backgroundColor: 'red' }}><Text style={{color:"white"}}>Planes Guardados</Text></TabHeading>}> 
+                    <PlanesGuardados navigation={this.props.navigation}></PlanesGuardados>
                 </Tab>
                 </Tabs>
         );

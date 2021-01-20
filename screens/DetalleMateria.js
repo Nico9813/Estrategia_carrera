@@ -23,8 +23,8 @@ const DetalleMateria = (props) => {
                 <FlatList
                     data={materia.id_correlativas_cursar}
                     renderItem={(item) => <Text style={{ color: 'white', paddingLeft: 20 }}>- {indiceMaterias[item.item].nombre}</Text>}
-                    keyExtractor={(value, key) => key.toString()}
-                    listKey={(item, index) => 'B' + index.toString()}
+                    keyExtractor={(_, key) => key.toString()}
+                    listKey={(_, index) => 'B' + index.toString()}
                 />
                 :
                 <Text style={{ color: 'white', paddingLeft: 20 }}> -Sin correlativas</Text>}

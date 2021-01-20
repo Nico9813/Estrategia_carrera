@@ -4,15 +4,14 @@ import { StatusBar, Text, TouchableOpacity, View } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import * as Progress from 'react-native-progress';
 import ProgressCircle from 'react-native-progress-circle';
-import { useDispatch, useStore } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { cambiarEstadoMateria } from '../data/acciones';
 import { EstadoMateria } from '../domain/EstadoMateria';
 import { indiceMaterias } from '../domain/indiceMaterias';
 import { Styles } from '../styles/styles';
 
 const Perfil = () => {
-  const store = useStore()
-  const { plan, materias } = store.getState()
+  const { plan, materias } = useSelector( state => ({plan: state.plan, materias: state.materias}))
 
   return(
     <View style={Styles.container}>
@@ -89,12 +88,11 @@ const GraficoCircularPorcentaje = (props) => {
 
 const CartaMateria = (props) => {
 
-  const  {id, estado } = props.materia
+  const  { id, estado } = props.materia
   const materia = indiceMaterias[id]
   const { nombre } = materia
 
-
-  const { dispatch } = useDispatch()
+  const dispatch = useDispatch()
 
   const siguienteEstado = (estado) => {
     switch (estado) {

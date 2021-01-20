@@ -9,7 +9,7 @@ import DetalleMateria from './DetalleMateria';
 
 import { EstadoMateria } from '../domain/EstadoMateria';
 import { indiceMaterias } from '../domain/indiceMaterias';
-import { k08_sistemas } from '../planes_actuales/sistemas_k08';
+import EstrategiaCursada from '../domain/EstrategiaCursada';
 
 const NO_SELECCIONADO = "NO_SELECCIONADO";
 
@@ -22,13 +22,20 @@ const Generador = (props) => {
 
     const generarPlan = (rendir) => {
         if (materiaSeleccionada && materiaSeleccionada != NO_SELECCIONADO) {
+
+            let estrategia = new EstrategiaCursada(
+                materiaSeleccionada, 
+                rendir,
+                maximo_anual,
+                maximo_cuatri,
+                maximo_finales,
+                materias
+            )
+
+            console.log("--------------------------------------------------------------")
+            estrategia.generar()
             props.navigation.navigate('PlanGenerado', {
-                plan: k08_sistemas,
-                maximo_anual: maximo_anual,
-                maximo_cuatri: maximo_cuatri,
-                maximo_finales: maximo_finales,
-                materiaSelecionada: materiaSeleccionada,
-                rendir: rendir
+                estrategia
             })
         }
     }
@@ -58,7 +65,6 @@ const Generador = (props) => {
                             style={{ flex: 2 }}
                             keyboardType='numeric'
                             placeholderTextColor="white"
-                            onChange={(value) => setMaximoCuatri(JSON.stringify(value.target.toString()))}
                             value={maximo_cuatri.toString()}
                         ></Input>
                     </Item>
@@ -68,7 +74,6 @@ const Generador = (props) => {
                             style={{ flex: 2 }}
                             keyboardType='numeric'
                             placeholderTextColor="white"
-                            onChange={(value) => setMaximoAnual(value)}
                             value={maximo_anual.toString()}
                         ></Input>
                     </Item>
@@ -78,7 +83,6 @@ const Generador = (props) => {
                             style={{ flex: 2 }}
                             keyboardType='numeric'
                             placeholderTextColor="white"
-                            onChange={(value) => setMaximoFinales(value)}
                             value={maximo_finales.toString()}
                         ></Input>
                     </Item>

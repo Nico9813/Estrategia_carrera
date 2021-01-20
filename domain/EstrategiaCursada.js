@@ -1,192 +1,151 @@
-import {CargaHoraria} from './CargaHoraria'
+import { CargaHoraria } from './CargaHoraria'
 import { MATERIA_FINAL } from './Plan'
 import { EstadoMateria } from './EstadoMateria'
+import { indiceMaterias } from './indiceMaterias'
 
 export default class EstrategiaCursada{
     anios = []
+    id
+    static id_actual = 0
     materias_totales = {}
+    materia_objetivo
+    rendir
     materiasCursadas 
     materiasAprobadas
     CANTIDAD_MAXIMA_MATERIAS_ANUAL
     CANTIDAD_MAXIMA_MATERIAS_CUATRIMESTRE
     CANTIDAD_MAXIMA_FINALES_CUATRIMESTRE
 
-    /*
-        plan_cursada = [{
-        id_materias_anuales: [],
-        cuatrimestres: [
-            {
-                id_finales:[]
-                id_materias: []
-            },
-            {
-                id_materias: []
-            }
-        ]
-        }]
-    */
-
-    constructor(max_anual, max_mat_cuatri, max_final_cuatri){
+    constructor(materia_objetivo, rendir, max_anual, max_mat_cuatri, max_final_cuatri, estado_actual){
+        this.id = EstrategiaCursada.id_actual++
         this.CANTIDAD_MAXIMA_FINALES_CUATRIMESTRE = max_final_cuatri
         this.CANTIDAD_MAXIMA_MATERIAS_CUATRIMESTRE = max_mat_cuatri
         this.CANTIDAD_MAXIMA_MATERIAS_ANUAL = max_anual
+        this.materiasCursadas = []
+        this.materiasAprobadas = []
+        this.materia_objetivo = materia_objetivo
+        this.rendir = rendir
+        this.materias_totales_plan = indiceMaterias
+        this.agregarMateriasAprobadas(estado_actual)
     }
 
-    agregarMateriasAprobadas(estadoAlumno){
-        this.materiasCursadas = estadoAlumno.filter( materia => materia.estado != EstadoMateria.NO_CURSADA)
-        this.materiasAprobadas = estadoAlumno.filter( materia => materia.estado == EstadoMateria.APROBADA)
-
-        const keyBy = (arr = []) => arr.reduce((acc, el) => {
-            acc[el.id] = el.estado
-            return acc
-        }, {})
-        
-        this.materiasCursadas = keyBy(this.materiasCursadas)
-
-        this.materiasAprobadas = keyBy(this.materiasAprobadas)
+    generar(){
+        this.agregarMateria(this.materia_objetivo, this.rendir)
     }
 
-    getCursadasTotales(){
-        return this.materias_totales.length
+    agregarMateriasAprobadas(estadoAlumno) {
+        const materiasCursadasActuales = estadoAlumno.filter(materia => materia.estado != EstadoMateria.NO_CURSADA)
+        const materiasAprobadasActuales = estadoAlumno.filter(materia => materia.estado == EstadoMateria.APROBADA)
+
+        materiasCursadasActuales.forEach( materia => {
+            this.materiasCursadas[materia.id] = -1
+        })
+
+        materiasAprobadasActuales.forEach( materia => {
+            this.materiasAprobadas[materia.id] = -1
+        })
     }
 
-    agregarAnioCursada(){
-        this.anios.push({
-            id_materia_anuales: [],
-            cuatrimestres: []
-        }) 
-        this.agregarCuatrimestreCursada(this.anios.length - 1)
-        this.agregarCuatrimestreCursada(this.anios.length - 1)
+    materiasCuatrimestre(numero_cuatri){
+        return this.materiasCursadas
+            .map((cuatri, id) => (cuatri == numero_cuatri && this.materias_totales_plan[id].tipo == CargaHoraria.CUATRIMESTRAL) ? this.materias_totales_plan[id] : null)
+            .filter(Boolean)
+    }
+    
+    materiasAnuales(anio){
+        return this.materiasCursadas.map((cuatri, id) => (Math.floor(cuatri / 2) == anio && this.materias_totales_plan[id].tipo == CargaHoraria.ANUAL) ? this.materias_totales_plan[id] : null)
+            .filter(Boolean)
     }
 
-    agregarCuatrimestreCursada(numero_anio){
-        this.anios[numero_anio].cuatrimestres.push({
-            id_finales: [],
-            id_materias: []
-        }) 
+    finalesCuatrimestre(numero_cuatri){
+        return this.materiasAprobadas
+            .map((cuatri, id) => (cuatri == numero_cuatri) ? this.materias_totales_plan[id] : undefined)
+            .filter(Boolean)
     }
 
-    cuatrimestreMateria(id_materia) {
-        let cuatrimestres = this.anios.flatMap((anio) =>
-            anio.cuatrimestres.map((cuatri, index) => cuatri.id_materias.concat(((index % 2) == 1) ? anio.id_materia_anuales : [])))
-
-        return cuatrimestres.findIndex(id_materias => id_materias.some(id => id == id_materia))
+    duracion(){
+        return Math.max(...this.materiasCursadas.filter(value => value != undefined))
     }
 
-    agregarMateriaAnual(materia){
+    agregarMateria(materia, rendir){
+        console.log(this.materias_totales_plan[materia].nombre)
+        if(this.materiasCursadas[materia] == undefined){
+            console.log("AGREGO " + this.materias_totales_plan[materia].nombre)
+            //console.log('agrego materia')
+            //console.log(this.materias_totales_plan[materia])
 
-        let reducer = (acc, el) => Math.max(this.cuatrimestreMateria(el), acc)
+            const materias_correlativas_a_cursar = this.materias_totales_plan[materia].id_correlativas_cursar
+            const materias_correlativas_a_rendir = this.materias_totales_plan[materia].id_correlativas_rendir
 
-        let cuatri_minimo = 1 + materia.id_correlativas_cursar.filter(id => !this.materiasCursadas[id]).reduce(reducer, -1);
+            const cursadas_restantes = materias_correlativas_a_cursar.filter(id => !this.materiasCursadas[id])
+            const finales_restantes = materias_correlativas_a_rendir.filter(id => !this.materiasAprobadas[id])
 
-        let anio_disponible = Math.trunc((cuatri_minimo + 2) / 2)
+            //console.log(cursadas_restantes)
+            //console.log(finales_restantes)
 
-        if (!this.anios[anio_disponible]) {
-            anio_disponible = this.anios.length
-            this.agregarAnioCursada();
-        }
+            console.log(cursadas_restantes)
+            console.log(finales_restantes)
 
-        while (this.anios[anio_disponible].id_materia_anuales.length >= this.CANTIDAD_MAXIMA_MATERIAS_ANUAL){ 
-            anio_disponible++
-            if (!this.anios[anio_disponible]) {
-                anio_disponible = this.anios.length
-                this.agregarAnioCursada();
+            cursadas_restantes.forEach(id => this.agregarMateria(id, false))
+            finales_restantes.forEach(id => this.agregarMateria(id, true))
+
+            const cuatrimestre_minimo_por_cursadas =
+                Math.max(...materias_correlativas_a_cursar
+                    .map(id_materia => 
+                        this.materias_totales_plan[id_materia].tipo == CargaHoraria.CUATRIMESTRAL ? this.materiasCursadas[id_materia] + 1 : this.materiasCursadas[id_materia] + 2))
+            const cuatrimestre_minimo_por_finales =
+                Math.max(...materias_correlativas_a_rendir.map(id_materia => this.materiasAprobadas[id_materia] ? this.materiasAprobadas[id_materia] : 0))
+            let cuatrimestre_minimo = Math.max(cuatrimestre_minimo_por_cursadas, cuatrimestre_minimo_por_finales, 0)
+
+            
+
+            const { tipo, nombre } = this.materias_totales_plan[materia]
+            const comparador = tipo == CargaHoraria.ANUAL ? this.CANTIDAD_MAXIMA_MATERIAS_ANUAL : this.CANTIDAD_MAXIMA_MATERIAS_CUATRIMESTRE
+            const duracion = tipo == CargaHoraria.ANUAL ? 2 : 1
+            cuatrimestre_minimo += (tipo == CargaHoraria.ANUAL && cuatrimestre_minimo % 2 ? 1 : 0)
+
+            console.log("cuatrimestre minimo post aumento impar " + cuatrimestre_minimo)
+
+            //console.log(this.materiasCursadas.filter((cuatri, index) => cuatri == cuatrimestre_minimo && index).length)
+            while (this.materiasCursadas.filter((cuatri, index) => index && cuatri == cuatrimestre_minimo && this.materias_totales_plan[index].tipo == tipo).length 
+                >= comparador){
+                //console.log("aumento cuatri")
+                //console.log(this.materiasCursadas.filter((cuatri, index) => cuatri == cuatrimestre_minimo && index).length)
+                cuatrimestre_minimo+=duracion
             }
-        }
-
-        this.anios[anio_disponible].id_materia_anuales.push(materia.id)
-    }
-
-    agregarMateriaCuatrimestral(materia){
-        let reducer = (acc, el) => Math.max(this.cuatrimestreMateria(el), acc)
-
-        let cuatri_minimo = 1 + materia.id_correlativas_cursar.filter(id => !this.materiasCursadas[id]).reduce(reducer, -1);
-
-        let anio_disponible = Math.trunc((cuatri_minimo + 1) / 2)
-
-        let cuatri_disponible = Math.trunc((cuatri_minimo + 1) % 2)
-
-        if(!this.anios[anio_disponible]){
-            anio_disponible = this.anios.length
-            this.agregarAnioCursada();
-        }
-
-        while (this.anios[anio_disponible].cuatrimestres[cuatri_disponible].id_materias.length >= this.CANTIDAD_MAXIMA_MATERIAS_CUATRIMESTRE) {
-            if (cuatri_disponible > 0) {
-                anio_disponible = anio_disponible + 1
-                cuatri_disponible = 0;
-                if (!this.anios[anio_disponible]) {
-                    anio_disponible = this.anios.length
-                    this.agregarAnioCursada();
-                }
-            } else {
-                cuatri_disponible = (cuatri_disponible + 1) % 2
+            
+            if(nombre != MATERIA_FINAL){
+                this.materiasCursadas[materia] = cuatrimestre_minimo
             }
+            console.log("cursadas")
+            console.log(this.materiasCursadas.map((value, index) => this.materias_totales_plan[index]?.nombre + ` ${value}`))
         }
+        if(rendir){
+            console.log("AGREGO FINAL" + this.materias_totales_plan[materia].nombre)
+            const materias_correlativas_a_cursar_para_rendir = this.materias_totales_plan[materia].id_correlativas_final_cursar
+            const cursadas_restantes_rendir = materias_correlativas_a_cursar_para_rendir.filter(id => this.materiasCursadas[id])
 
-        this.anios[anio_disponible].cuatrimestres[cuatri_disponible].id_materias.push(materia.id)
-    }
+            console.log(cursadas_restantes_rendir)
 
-    existeFinal(materia_id) {
-        return this.materiasAprobadas[materia_id] 
-            || this.anios.some(anio => anio.cuatrimestres.some(cuatri => cuatri.id_finales.includes(materia_id)))
-    }
+            cursadas_restantes_rendir.forEach(id => this.agregarMateria(id))
+            let cuatrimestre_minimo_rendir = 
+                Math.max(...materias_correlativas_a_cursar_para_rendir.map(id_materia => this.materias_totales_plan[id_materia]))
+            const fin_cursada_materia = this.materias_totales_plan[materia].tipo == CargaHoraria.CUATRIMESTRAL ? this.materiasCursadas[materia] : this.materiasCursadas[materia] + 1
+            console.log("cuatrimestre minimo " + cuatrimestre_minimo_rendir)
+            cuatrimestre_minimo_rendir = Math.max(cuatrimestre_minimo_rendir, fin_cursada_materia, 0)
+            console.log("cuatrimestre minimo post aumento cursada " + cuatrimestre_minimo_rendir)
+            console.log("cuatrimestre actual finales " + this.materiasAprobadas.filter((cuatri) => cuatri == cuatrimestre_minimo_rendir).length)
+            console.log("cuatrimestre actual finales maxima " + this.CANTIDAD_MAXIMA_FINALES_CUATRIMESTRE)
 
-    agregarMateria(materia){
-        if(this.materias_totales[materia.id]
-            || this.materiasCursadas[materia.id]
-            || materia.nombre == MATERIA_FINAL){
-            return
-        }
-        switch (materia.tipo) {
-            case CargaHoraria.CUATRIMESTRAL:
-                this.agregarMateriaCuatrimestral(materia)
-                break
-            case CargaHoraria.ANUAL:
-                this.agregarMateriaAnual(materia)
-                break
-            default:
-                break
-        }
-
-        this.materias_totales[materia.id] = materia.id
-    }
-
-    agregarFinal(materia){
-        if(this.existeFinal(materia.id)){
-            return
-        }
-
-        let reducer = (acc, el) => Math.max(this.cuatrimestreMateria(el), acc)
-
-        let cuatri_minimo = materia.id_correlativas_rendir.filter(id => !this.materiasAprobadas[id]).reduce(reducer, 0);
-
-        let cuatri_cursada = this.cuatrimestreMateria(materia.id)
-
-        cuatri_minimo = Math.max(cuatri_cursada, cuatri_minimo)
-
-        let anio_disponible = Math.trunc(cuatri_minimo / 2)
-
-        let cuatri_disponible = Math.trunc(cuatri_minimo % 2)
-
-        if (!this.anios[anio_disponible]) {
-            anio_disponible = this.anios.length
-            this.agregarAnioCursada();
-        }
-
-        while (this.anios[anio_disponible].cuatrimestres[cuatri_disponible].id_finales.length >= this.CANTIDAD_MAXIMA_FINALES_CUATRIMESTRE) {
-            if(cuatri_disponible > 0){
-                anio_disponible = anio_disponible + 1
-                cuatri_disponible = 0;
-                if (!this.anios[anio_disponible]) {
-                    anio_disponible = this.anios.length
-                    this.agregarAnioCursada();
-                }
-            }else{
-                cuatri_disponible = (cuatri_disponible + 1) % 2 
+            while (this.materiasAprobadas.filter((cuatri) => cuatri == cuatrimestre_minimo_rendir).length >= this.CANTIDAD_MAXIMA_FINALES_CUATRIMESTRE){
+                cuatrimestre_minimo_rendir++
             }
-        }
 
-        this.anios[anio_disponible].cuatrimestres[cuatri_disponible].id_finales.push(materia.id)
+            console.log("cuatrimestre minimo post aumento maximo " + cuatrimestre_minimo_rendir)
+            
+            this.materiasAprobadas[materia] = cuatrimestre_minimo_rendir
+            console.log("finales")
+            console.log(this.materiasAprobadas.map((value, index) => this.materias_totales_plan[index]?.nombre + ` ${value}`))
+        }
     }
 }
